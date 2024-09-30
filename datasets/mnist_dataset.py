@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import Dataset
 import struct
 from PIL import Image
+from torchvision import transforms
 
 class MNISTDataset(Dataset):
     def __init__(self, images_filepath, labels_filepath, transform=None, convert_to_rgb=False):
@@ -53,7 +54,10 @@ class MNISTDataset(Dataset):
 
         # Apply transformations (e.g., resizing, normalization)
         if self.transform:
-            image = self.transform(image)
+            image = self.transform(image)  # Transform to tensor if needed
+        else:
+            # If no transform is provided, explicitly convert to tensor
+            image = transforms.ToTensor()(image)
 
         return image, label
 

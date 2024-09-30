@@ -125,3 +125,42 @@ def test_file_handling(create_temp_mnist_files):
         dataset.label_file.read()
 
 
+# Test with Transform Provided
+def test_getitem_with_transform(create_temp_mnist_files):
+    images_filepath, labels_filepath = create_temp_mnist_files
+    
+    # Define the transformation: converting to tensor and normalizing
+    transform = transforms.Compose([
+        transforms.ToTensor(),  # Converts image to tensor
+        transforms.Normalize((0.5,), (0.5,))  # Normalize tensor
+    ])
+    
+    # Create the dataset with transform
+    dataset = MNISTDataset(images_filepath, labels_filepath, transform=transform, convert_to_rgb=False)
+
+    # Fetch a single image and label
+    image, label = dataset[0]
+
+    # Check the shape of the tensor (grayscale: 1x28x28)
+    assert isinstance(image, torch.Tensor), f"Expected torch.Tensor but got {type(image)}"
+    assert image.shape == (1, 28, 28), f"Expected shape (1, 28, 28) but got {image.shape}"
+    assert isinstance(label, int), f"Expected label to be an int but got {type(label)}"
+
+    # Check if normalization was applied (since we normalized using (0.5, 0.5), mean should be close to 0)
+    assert torch.allclose(image.mean(), torch.tensor(0.0), atol=1e-1), f"Normalization failed, mean is {image.mean()}"
+
+# Test without Transform Provided
+def test_getitem_without_transform(create_temp_mnist_files):
+    images_filepath, labels_filepath = create_temp_mnist_files
+
+    # Create the dataset without providing a transform
+    dataset = MNISTDataset(images_filepath, labels_filepath, transform=None, convert_to_rgb=False)
+
+    # Fetch a single image and label
+    image, label = dataset[0]
+
+    # Check the shape of the image (grayscale: 1x28x28)
+    assert isinstance(image, torch.Tensor), f"Expected torch.Tensor but got {type(image)}"
+    assert image.shape == (1, 28, 28), f"Expected shape (1, 28, 28) but got {image.shape}"
+    assert isinstance(label, int), f"Expected label to be an int but got {type(label)}"
+
