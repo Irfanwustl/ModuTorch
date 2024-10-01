@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from torch.utils.data import Dataset
 import struct
 from PIL import Image
@@ -9,8 +8,16 @@ class MNISTDataset(Dataset):
     def __init__(self, images_filepath, labels_filepath, transform=None, convert_to_rgb=False):
         self.images_filepath = images_filepath
         self.labels_filepath = labels_filepath
-        self.transform = transform
         self.convert_to_rgb = convert_to_rgb
+        
+        # Use default transform if none is provided
+        if transform is None:
+            self.transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,), (0.5,))
+            ])
+        else:
+            self.transform = transform
 
         # Open files once during initialization and keep them open
         self.image_file = open(self.images_filepath, 'rb')
@@ -33,7 +40,6 @@ class MNISTDataset(Dataset):
     def __del__(self):
         self.close()
 
-        
     def __len__(self):
         return self.num_images
 
@@ -53,15 +59,9 @@ class MNISTDataset(Dataset):
             image = image.convert("RGB")
 
         # Apply transformations (e.g., resizing, normalization)
-        if self.transform:
-            image = self.transform(image)  # Transform to tensor if needed
-        else:
-            # If no transform is provided, explicitly convert to tensor
-            image = transforms.ToTensor()(image)
+        image = self.transform(image)
 
         return image, label
-
-
 
     def _read_image(self, idx):
         # Seek to the required image's position
@@ -77,7 +77,4 @@ class MNISTDataset(Dataset):
 
     def __del__(self):
         # Ensure that files are closed when the object is deleted
-        if hasattr(self, 'image_file'):
-            self.image_file.close()
-        if hasattr(self, 'label_file'):
-            self.label_file.close()
+        self.close()

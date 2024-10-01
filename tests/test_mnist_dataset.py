@@ -1,14 +1,10 @@
-from datasets.mnist_dataset import MNISTDataset
-
-
 import os
 import pytest
 import numpy as np
 import torch
 from torchvision import transforms
+from datasets.mnist_dataset import MNISTDataset
 import struct
-
-
 
 
 # Create mock image and label files
@@ -30,31 +26,29 @@ def create_temp_mnist_files(tmpdir):
 
     return images_filepath, labels_filepath
 
+
 # Test dataset initialization
 def test_dataset_initialization(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
-    
+
     # Create the dataset
     dataset = MNISTDataset(images_filepath, labels_filepath)
 
     # Test that dataset length is correct
     assert len(dataset) == 10
 
+
 # Test fetching a single data point (grayscale image)
 def test_getitem_single_image(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
-    
-    # Apply a transform that includes converting to a tensor
-    transform = transforms.Compose([
-        transforms.ToTensor()  # Ensure output is a tensor
-    ])
-    
-    dataset = MNISTDataset(images_filepath, labels_filepath, transform=transform)
+
+    # Create dataset with default transform (grayscale)
+    dataset = MNISTDataset(images_filepath, labels_filepath)
 
     # Fetch a single image and label
     image, label = dataset[0]
 
-    # Check the shape of the image (grayscale: 1x28x28)
+    # Check that the output is a tensor and the correct shape
     assert isinstance(image, torch.Tensor), f"Expected torch.Tensor but got {type(image)}"
     assert image.shape == (1, 28, 28), f"Expected shape (1, 28, 28) but got {image.shape}"
     assert isinstance(label, int), f"Expected int but got {type(label)}"
@@ -63,14 +57,9 @@ def test_getitem_single_image(create_temp_mnist_files):
 # Test channel replication (1-channel to 3-channel conversion)
 def test_rgb_conversion(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
-    
-    # Apply a transform that includes converting to a tensor
-    transform = transforms.Compose([
-        transforms.ToTensor()  # Convert to tensor
-    ])
-    
+
     # Create the dataset with convert_to_rgb=True
-    dataset = MNISTDataset(images_filepath, labels_filepath, transform=transform, convert_to_rgb=True)
+    dataset = MNISTDataset(images_filepath, labels_filepath, convert_to_rgb=True)
 
     # Fetch a single image and label
     image, label = dataset[0]
@@ -85,10 +74,10 @@ def test_rgb_conversion(create_temp_mnist_files):
 def test_transforms_applied(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
 
-    # Define a simple transformation
+    # Define a custom transformation
     transform = transforms.Compose([
-        transforms.ToTensor(),  # Converts image to [0, 1] range
-        transforms.Resize((32, 32))  # Resizes to 32x32
+        transforms.ToTensor(),
+        transforms.Resize((32, 32))  # Resize to 32x32
     ])
 
     dataset = MNISTDataset(images_filepath, labels_filepath, transform=transform)
@@ -97,7 +86,8 @@ def test_transforms_applied(create_temp_mnist_files):
     image, label = dataset[0]
 
     # Check the shape after resizing (should be 1x32x32 for grayscale)
-    assert image.shape == (1, 32, 32)
+    assert image.shape == (1, 32, 32), f"Expected shape (1, 32, 32) but got {image.shape}"
+
 
 # Test out-of-range index access
 def test_out_of_range_index(create_temp_mnist_files):
@@ -106,6 +96,7 @@ def test_out_of_range_index(create_temp_mnist_files):
 
     with pytest.raises(IndexError):
         _ = dataset[100]  # Accessing an index out of bounds
+
 
 # Test that files are properly closed
 def test_file_handling(create_temp_mnist_files):
@@ -128,13 +119,13 @@ def test_file_handling(create_temp_mnist_files):
 # Test with Transform Provided
 def test_getitem_with_transform(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
-    
+
     # Define the transformation: converting to tensor and normalizing
     transform = transforms.Compose([
-        transforms.ToTensor(),  # Converts image to tensor
-        transforms.Normalize((0.5,), (0.5,))  # Normalize tensor
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
     ])
-    
+
     # Create the dataset with transform
     dataset = MNISTDataset(images_filepath, labels_filepath, transform=transform, convert_to_rgb=False)
 
@@ -149,12 +140,13 @@ def test_getitem_with_transform(create_temp_mnist_files):
     # Check if normalization was applied (since we normalized using (0.5, 0.5), mean should be close to 0)
     assert torch.allclose(image.mean(), torch.tensor(0.0), atol=1e-1), f"Normalization failed, mean is {image.mean()}"
 
-# Test without Transform Provided
+
+# Test without Transform Provided (uses default transform)
 def test_getitem_without_transform(create_temp_mnist_files):
     images_filepath, labels_filepath = create_temp_mnist_files
 
-    # Create the dataset without providing a transform
-    dataset = MNISTDataset(images_filepath, labels_filepath, transform=None, convert_to_rgb=False)
+    # Create the dataset without providing a custom transform
+    dataset = MNISTDataset(images_filepath, labels_filepath, transform=None)
 
     # Fetch a single image and label
     image, label = dataset[0]
@@ -163,4 +155,3 @@ def test_getitem_without_transform(create_temp_mnist_files):
     assert isinstance(image, torch.Tensor), f"Expected torch.Tensor but got {type(image)}"
     assert image.shape == (1, 28, 28), f"Expected shape (1, 28, 28) but got {image.shape}"
     assert isinstance(label, int), f"Expected label to be an int but got {type(label)}"
-
