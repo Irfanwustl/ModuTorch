@@ -4,6 +4,10 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 
+from tqdm import tqdm
+import torch.nn as nn
+import torch.optim as optim
+
 def train_model(model, train_loader, test_loader, num_epochs=10, learning_rate=0.001, device='cuda'):
     # Move model to GPU if available
     model = model.to(device)
@@ -16,8 +20,11 @@ def train_model(model, train_loader, test_loader, num_epochs=10, learning_rate=0
         model.train()  # Set model to training mode
         running_loss = 0.0
 
+        # Initialize tqdm for progress tracking
+        progress_bar = tqdm(train_loader, desc=f"Epoch [{epoch+1}/{num_epochs}]", leave=False)
+
         # Training loop
-        for images, labels in train_loader:
+        for images, labels in progress_bar:
             images, labels = images.to(device), labels.to(device)
 
             # Zero the parameter gradients
@@ -33,7 +40,10 @@ def train_model(model, train_loader, test_loader, num_epochs=10, learning_rate=0
 
             running_loss += loss.item()
 
-        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader)}")
+            # Update progress bar with running loss
+            progress_bar.set_postfix({'loss': running_loss / len(train_loader)})
+
+        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}")
 
         # Validation loop
         validate_model(model, test_loader, device)
