@@ -8,7 +8,7 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 
-def train_model(model, train_loader, test_loader, num_epochs=10, learning_rate=0.001, device='cuda'):
+def train_model(model, train_loader, dev_loader, num_epochs=10, learning_rate=0.001, device='cuda'):
     # Move model to GPU if available
     model = model.to(device)
 
@@ -46,7 +46,7 @@ def train_model(model, train_loader, test_loader, num_epochs=10, learning_rate=0
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}")
 
         # Validation loop
-        validate_model(model, test_loader, device)
+        validate_model(model, dev_loader, device)
 
     print("Training complete!")
     return model
