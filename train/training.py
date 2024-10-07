@@ -1,71 +1,99 @@
-# train/training.py
-
 import torch
-import torch.optim as optim
-import torch.nn as nn
-
 from tqdm import tqdm
-import torch.nn as nn
-import torch.optim as optim
 
-def train_model(model, train_loader, dev_loader, num_epochs=10, learning_rate=0.001, device='cuda'):
-    # Move model to GPU if available
-    model = model.to(device)
+class ModelTrainer:
+    """
+    A class to encapsulate the training, validation, and prediction functionality for a PyTorch model.
+    """
 
-    # Loss function and optimizer
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    def __init__(self, model, loss_fn, optimizer, metrics, device=None):
+        """
+        Initialize the ModelTrainer with the given model, loss function, optimizer, metrics, and device.
 
-    for epoch in range(num_epochs):
-        model.train()  # Set model to training mode
-        running_loss = 0.0
+        Args:
+            model (torch.nn.Module): The PyTorch model to be trained.
+            loss_fn (callable): The loss function to be used for training and validation.
+            optimizer (torch.optim.Optimizer): The optimizer used for model parameter updates.
+            metrics (dict): A dictionary of metrics where keys are metric names and values are callable functions.
+            device (torch.device, optional): The device (e.g., 'cuda' or 'cpu') to use for computation. Defaults to 'cuda' if available.
+        """
+        self.model = model.to(device)
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.metrics = metrics
+        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        # Initialize tqdm for progress tracking
-        progress_bar = tqdm(train_loader, desc=f"Epoch [{epoch+1}/{num_epochs}]", leave=False)
+    def train(self, train_loader, dev_loader=None, num_epochs=10):
+        """
+        Train the model for a specified number of epochs and optionally validate on a development set.
 
-        # Training loop
-        for images, labels in progress_bar:
-            images, labels = images.to(device), labels.to(device)
+        Args:
+            train_loader (DataLoader): DataLoader for the training data.
+            dev_loader (DataLoader, optional): DataLoader for the validation data. Defaults to None.
+            num_epochs (int, optional): Number of epochs to train the model. Defaults to 10.
 
-            # Zero the parameter gradients
-            optimizer.zero_grad()
+        Returns:
+            None
+        """
+        for epoch in range(num_epochs):
+            self.model.train()  # Set the model to training mode
+            running_loss = 0.0
+            progress_bar = tqdm(train_loader, desc=f"Epoch [{epoch+1}/{num_epochs}]", leave=False)
 
-            # Forward pass
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            # Training loop
+            for inputs, targets in progress_bar:
+                inputs, targets = inputs.to(self.device), targets.to(self.device)
+                self.optimizer.zero_grad()  # Zero the gradients
 
-            # Backward pass and optimize
-            loss.backward()
-            optimizer.step()
+                outputs = self.model(inputs)  # Forward pass
+                loss = self.loss_fn(outputs, targets)  # Compute loss
+                loss.backward()  # Backward pass
+                self.optimizer.step()  # Update parameters
 
-            running_loss += loss.item()
+                running_loss += loss.item()
+                progress_bar.set_postfix({'loss': running_loss / len(train_loader)})
 
-            # Update progress bar with running loss
-            progress_bar.set_postfix({'loss': running_loss / len(train_loader)})
+            print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}")
 
-        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}")
+            # Validate after each epoch if a validation loader is provided
+            if dev_loader:
+                val_loss, val_metrics = self.validate(dev_loader)
+                print(f"Validation Loss: {val_loss:.4f}, Metrics: {val_metrics}")
 
-        # Validation loop
-        validate_model(model, dev_loader, device)
+    def validate(self, loader):
+        """
+        Validate the model on a given dataset.
 
-    print("Training complete!")
-    return model
+        Args:
+            loader (DataLoader): DataLoader for the validation or test data.
+
+        Returns:
+            float: Validation loss averaged over all batches.
+            dict: Dictionary of validation metrics averaged over all batches.
+        """
+        self.model.eval()  # Set the model to evaluation mode
+        val_loss = 0.0
+        metric_values = {name: 0.0 for name in self.metrics}
+
+        with torch.no_grad():  # Disable gradient computation for validation
+            for inputs, targets in loader:
+                inputs, targets = inputs.to(self.device), targets.to(self.device)
+                outputs = self.model(inputs)
+                loss = self.loss_fn(outputs, targets)  # Compute validation loss
+                val_loss += loss.item()
+
+                # Compute metrics
+                for name, metric_fn in self.metrics.items():
+                    metric_value = metric_fn(outputs, targets)
+                    # Check if metric_value is a tensor, if so, convert it to a float using .item()
+                    if isinstance(metric_value, torch.Tensor):
+                        metric_values[name] += metric_value.item()
+                    else:
+                        metric_values[name] += metric_value
+
+        val_loss /= len(loader)
+        metric_values = {name: value / len(loader) for name, value in metric_values.items()}
+        return val_loss, metric_values
 
 
-def validate_model(model, test_loader, device):
-    model.eval()  # Set model to evaluation mode
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for images, labels in test_loader:
-            images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    accuracy = 100 * correct / total
-    print(f"Validation Accuracy: {accuracy:.2f}%")
-    return accuracy  # Return the computed accuracy
 

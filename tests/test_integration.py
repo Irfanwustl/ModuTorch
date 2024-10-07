@@ -1,11 +1,14 @@
 import pytest
 import torch
 from models.vgg import initialize_vgg16
-from train.training import train_model, validate_model  
+from train.training import ModelTrainer  
 from dataloaders.data_loaders import get_data_loaders
 from torchvision import transforms
 from datasets.mnist_dataset import MNISTDataset
 from utils.project_settings import set_random_seed
+from train.metrics import accuracy_metric  
+from train.losses import get_cross_entropy_loss  
+from train.optimizers import get_adam_optimizer 
 
 @pytest.mark.integration
 @pytest.mark.parametrize("use_dev", [False, True])
@@ -63,25 +66,34 @@ def test_vgg_pretraining_on_mnist(use_dev):
     # Initialize VGG16 model (pretrained=False for the test)
     model = initialize_vgg16(num_classes=10, pretrained=False)
 
+    # Get the loss function and optimizer
+    loss_fn = get_cross_entropy_loss()
+    optimizer = get_adam_optimizer(model, learning_rate=0.001)
+
+    # Define the metrics
+    metrics = {
+        'accuracy': accuracy_metric
+    }
+
+    # Initialize the ModelTrainer class
+    trainer = ModelTrainer(model, loss_fn, optimizer, metrics, device)
+
     # Run the training loop for one epoch
-    trained_model = train_model(
-        model, 
+    trainer.train(
         train_loader, 
         dev_loader if use_dev else test_loader,  # Use dev_loader if available, else test_loader
-        num_epochs=1, 
-        learning_rate=0.001, 
-        device=device
+        num_epochs=1
     )
 
     # Check if the model's weights have been updated after training
     with torch.no_grad():
-        weight_sum = trained_model.features[0].weight.sum().item()
+        weight_sum = trainer.model.features[0].weight.sum().item()
         assert weight_sum != 0, "The model weights did not update after training."
 
     # Validate the model after training
-    accuracy = validate_model(trained_model, test_loader, device)
+    val_loss, val_metrics = trainer.validate(test_loader)
 
     # Check that the accuracy is computed and is a valid percentage
-    assert accuracy >= 0, f"Model validation failed, accuracy is {accuracy}"
+    assert val_metrics['accuracy'] >= 0, f"Model validation failed, accuracy is {val_metrics['accuracy']}"
 
-    print(f"Integration test {'with' if use_dev else 'without'} dev set passed with accuracy: {accuracy}%")
+    print(f"Integration test {'with' if use_dev else 'without'} dev set passed with accuracy: {val_metrics['accuracy']}%")
