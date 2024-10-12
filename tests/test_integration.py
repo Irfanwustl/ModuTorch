@@ -1,7 +1,7 @@
 import pytest
 import torch
 from models.vgg import initialize_vgg16
-from train.training import ModelTrainer  
+from train.train_model import ModelTrainer  # Updated to match the new import
 from dataloaders.data_loaders import get_data_loaders
 from torchvision import transforms
 from datasets.mnist_dataset import MNISTDataset
@@ -11,14 +11,20 @@ from train.losses import get_cross_entropy_loss
 from train.optimizers import get_adam_optimizer 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("use_dev", [False, True])
-def test_vgg_pretraining_on_mnist(use_dev):
+@pytest.mark.parametrize("use_dev, real_time_plot, plot_frequency", [
+    (False, False, 1),
+    (True, False, 1),
+    (True, True, 5)  # Real-time plotting enabled every 5 epochs
+])
+def test_vgg_pretraining_on_mnist(use_dev, real_time_plot, plot_frequency):
     """
     Integration test for VGG pretraining on the MNIST dataset.
-    Tests model initialization, training, and validation with and without a dev set.
+    Tests model initialization, training, validation, and the getter methods for losses and metrics.
     
     Args:
         use_dev (bool): Whether to use the dev set or not.
+        real_time_plot (bool): Whether to enable real-time plotting.
+        plot_frequency (int): Frequency of real-time plotting (in epochs).
     """
     # Set a fixed random seed for reproducibility across the entire project
     set_random_seed(42)
@@ -78,12 +84,15 @@ def test_vgg_pretraining_on_mnist(use_dev):
     # Initialize the ModelTrainer class
     trainer = ModelTrainer(model, loss_fn, optimizer, metrics, device)
 
-    # Run the training loop for one epoch
+    # Run the training loop for one epoch with the option of real-time plotting and custom plot frequency
     trainer.train(
         train_loader, 
-        dev_loader if use_dev else test_loader,  # Use dev_loader if available, else test_loader
-        num_epochs=1
+        dev_loader if use_dev else None,  # Pass dev_loader for validation if use_dev, else pass None
+        num_epochs=1,
+        real_time_plot=real_time_plot,  # Enable real-time plotting based on the test parameters
+        plot_frequency=plot_frequency  # Set plot frequency
     )
+
 
     # Check if the model's weights have been updated after training
     with torch.no_grad():
@@ -95,5 +104,23 @@ def test_vgg_pretraining_on_mnist(use_dev):
 
     # Check that the accuracy is computed and is a valid percentage
     assert val_metrics['accuracy'] >= 0, f"Model validation failed, accuracy is {val_metrics['accuracy']}"
+
+    # Test the getter methods for losses
+    train_losses = trainer.get_train_losses()
+    val_losses = trainer.get_val_losses()
+
+    # Ensure that the training and validation losses were tracked and can be retrieved
+    assert len(train_losses) > 0, "Training losses were not recorded."
+    if use_dev:
+        assert len(val_losses) > 0, "Validation losses were not recorded."
+    else:
+        assert len(val_losses) == 0, "Validation losses should not be recorded without a dev set."
+
+    # Test the getter method for metric performance
+    metric_performances = trainer.get_metric_performances()
+
+    # Ensure that metric performances (e.g., accuracy) were tracked and can be retrieved
+    assert len(metric_performances) > 0, "Metric performances were not recorded."
+    assert 'accuracy' in metric_performances[0], "Accuracy metric was not recorded."
 
     print(f"Integration test {'with' if use_dev else 'without'} dev set passed with accuracy: {val_metrics['accuracy']}%")
