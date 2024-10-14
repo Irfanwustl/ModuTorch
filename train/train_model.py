@@ -84,7 +84,7 @@ class ModelTrainer:
             # Only validate if a validation (dev) loader is provided
             if val_loader:
                 avg_val_loss = self.validate(val_loader)
-                self._val_losses.append(avg_val_loss)
+                self._val_losses.append(avg_val_loss[0]) ###################################
 
             # Real-time plotting logic
             if real_time_plot and (epoch + 1) % plot_frequency == 0:

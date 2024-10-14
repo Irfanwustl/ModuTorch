@@ -55,3 +55,35 @@ class Plotter:
 
         plt.legend()
         plt.pause(0.001)  # Pause to allow the plot to update in real time
+
+    @staticmethod
+    def plot_learning_curve(train_sizes_actual, train_losses, val_losses):
+        """
+        Plot the learning curve showing how training and validation losses change with respect to the actual number of training samples.
+
+        Args:
+            train_sizes_actual (list of int): Actual number of training samples used for each subset.
+            train_losses (list of float): List of training losses for each size of the training set.
+            val_losses (list of float): List of validation losses for each size of the training set.
+
+        Returns:
+            None
+        """
+        plt.figure(figsize=(10, 6))
+        plt.plot(train_sizes_actual, train_losses, label='Training Loss', marker='o')
+        plt.plot(train_sizes_actual, val_losses, label='Validation Loss', marker='o')
+
+        # Use Matplotlib's AutoLocator for automatic tick spacing
+        plt.gca().xaxis.set_major_locator(plt.MaxNLocator(integer=True))  # Force ticks at integer values
+        
+        plt.title('Learning Curve: Training and Validation Loss vs Training Set Size')
+        plt.xlabel('Number of Training Samples')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+
+
+
+    

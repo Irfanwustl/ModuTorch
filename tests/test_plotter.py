@@ -7,8 +7,8 @@ from plotting.plotter import Plotter
 @pytest.fixture
 def sample_losses():
     """Fixture to provide sample training and validation losses."""
-    train_losses = [0.8, 0.6, 0.4, 0.3]
-    val_losses = [0.9, 0.7, 0.5, 0.35]
+    train_losses = [0.8, 0.6, 0.4, 0.3, 0.2]  
+    val_losses = [0.9, 0.7, 0.5, 0.35, 0.25]  
     return train_losses, val_losses
 
 def test_plot_loss_vs_epochs(sample_losses):
@@ -71,3 +71,26 @@ def test_plot_real_time(sample_losses):
 
     # Close the plot to free up memory
     plt.close()
+
+def test_plot_learning_curve(sample_losses):
+    """
+    Test plot_learning_curve function with valid input.
+    """
+    train_losses, val_losses = sample_losses
+    train_sizes = [0.1, 0.3, 0.5, 0.7, 1.0]
+
+    # Call the plot_learning_curve function
+    Plotter.plot_learning_curve(train_sizes, train_losses, val_losses)
+
+    # Check the plot contains the correct number of lines (one for train, one for val)
+    ax = plt.gca()
+    assert len(ax.lines) == 2, "Expected 2 lines (train and validation) to be plotted."
+
+    # Verify the plot labels
+    labels = [line.get_label() for line in ax.lines]
+    assert 'Training Loss' in labels, "Missing 'Training Loss' label"
+    assert 'Validation Loss' in labels, "Missing 'Validation Loss' label"
+
+    # Close the plot to free up memory
+    plt.close()
+
