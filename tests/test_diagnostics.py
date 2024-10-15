@@ -1,7 +1,7 @@
 import pytest
 import torch
 import logging  # Add logging
-from models.vgg import initialize_vgg16
+from models.vgg import initialize_vgg16, initialize_vgg16_no_dropout
 from train.diagnostics import calculate_learning_curve
 from train.train_model import ModelTrainer
 from dataloaders.data_loaders import get_data_loaders
@@ -62,7 +62,7 @@ def test_vgg_learning_curve_with_train_dev_split():
     logging.info(f"Actual number of training samples used at each point: {actual_train_sizes}")
 
     def initialize_vgg_model():
-        return initialize_vgg16(num_classes=10, pretrained=False)
+        return initialize_vgg16_no_dropout(num_classes=10, pretrained=False)
 
     def get_optimizer_fn(model):
         return get_adam_optimizer(model)
