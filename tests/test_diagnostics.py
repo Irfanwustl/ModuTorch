@@ -11,7 +11,7 @@ from utils.project_settings import set_random_seed
 from train.metrics import accuracy_metric
 from train.losses import get_cross_entropy_loss
 from train.optimizers import get_adam_optimizer
-from plotting.plotter import Plotter
+from train.plotter import Plotter
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)  # This will allow INFO level messages to be printed

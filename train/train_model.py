@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt  
-from plotting.plotter import Plotter  
+from .plotter import Plotter  
 import torch
 from tqdm import tqdm
 

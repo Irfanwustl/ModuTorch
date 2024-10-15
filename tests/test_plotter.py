@@ -2,7 +2,7 @@ import pytest
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend to prevent actual plot rendering
 import matplotlib.pyplot as plt
-from plotting.plotter import Plotter
+from train.plotter import Plotter
 
 @pytest.fixture
 def sample_losses():
