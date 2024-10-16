@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 class Plotter:
     """
@@ -24,11 +25,20 @@ class Plotter:
         if val_losses:
             plt.plot(epochs, val_losses, label='Validation Loss')
 
+        # Set title and labels
         plt.title('Training and Validation Loss vs Epochs')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
+
+        # Use MaxNLocator to control the number of ticks on the x-axis
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True, prune='both'))  # Ensures integer ticks and avoids overcrowding
+
+        # Add legend and grid
         plt.legend()
         plt.grid(True)
+        
+        # Display the plot
         plt.show()
 
     @staticmethod

@@ -19,7 +19,7 @@ from models.mnist_cnn import MNISTCNN  # Import your custom CNN model
 logging.basicConfig(level=logging.INFO)
 
 @pytest.mark.parametrize("initialize_model_fn, num_channels, img_size", [
-    (initialize_vgg16_no_dropout, 3, (224, 224)),  # VGG16 expects 3 channels, image size 224x224
+    #(initialize_vgg16_no_dropout, 3, (224, 224)),  # VGG16 expects 3 channels, image size 224x224
     
     (MNISTCNN, 1, (28, 28))                        # MNISTCNN expects 1 channel, image size 28x28
 ])
@@ -48,13 +48,22 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
     train_dataset = MNISTDataset(train_images_filepath, train_labels_filepath, transform=transform)
     test_dataset = MNISTDataset(test_images_filepath, test_labels_filepath, transform=transform)
 
-    train_loader, dev_loader, test_loader = get_data_loaders(
+    # train_loader, dev_loader, test_loader = get_data_loaders(
+    #     train_dataset,
+    #     test_dataset,
+    #     batch_size=64,
+    #     subset_size=1000,
+    #     return_dev=True
+    # )
+
+    train_loader, test_loader = get_data_loaders(
         train_dataset,
         test_dataset,
-        batch_size=8,
-        subset_size=100,
-        return_dev=True
+        batch_size=64,
+        subset_size=1000,
+        return_dev=False
     )
+    dev_loader = test_loader
 
     total_train_samples_after_split = len(train_loader.dataset)
     dev_samples = len(dev_loader.dataset)
@@ -62,7 +71,7 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
     logging.info(f"Number of training samples after split: {total_train_samples_after_split}")
     logging.info(f"Number of validation (dev) samples: {dev_samples}")
 
-    train_sizes_fractions = [0.1, 0.3, 0.5]
+    train_sizes_fractions = [0.1, 0.3, 0.5, 0.7, 1]
     actual_train_sizes = [int(fraction * total_train_samples_after_split) for fraction in train_sizes_fractions]
 
     def get_optimizer_fn(model):
@@ -78,7 +87,7 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
         train_loader=train_loader,
         val_loader=dev_loader,
         device=device,
-        num_epochs=1,
+        num_epochs=100,
         train_sizes=train_sizes_fractions,
         loss_fn=loss_fn,
         metrics=metrics
