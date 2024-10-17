@@ -48,10 +48,13 @@ def calculate_learning_curve(trainer_class, model_init_fn, optimizer_fn, train_l
         # Train the model with the current subset
         trainer.train(train_subset_loader, val_loader, num_epochs=num_epochs)
 
+        # Measure final training and validation losses after training
+        final_train_loss = trainer.validate(train_subset_loader)[0]  # Validate on the same training subset
+        final_val_loss = trainer.validate(val_loader)[0]  # Validate on the full validation set
+
         # Store the actual size and losses
         train_sizes_actual.append(subset_size)  # Actual training subset size
-        train_losses.append(np.mean(trainer.get_train_losses()))  # Mean of the training losses
-        val_losses.append(np.mean(trainer.get_val_losses()))  # Mean of the validation losses
+        train_losses.append(final_train_loss)  # Final training loss
+        val_losses.append(final_val_loss)  # Final validation loss
 
     return train_sizes_actual, train_losses, val_losses
-

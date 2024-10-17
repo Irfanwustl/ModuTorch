@@ -71,7 +71,7 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
     logging.info(f"Number of training samples after split: {total_train_samples_after_split}")
     logging.info(f"Number of validation (dev) samples: {dev_samples}")
 
-    train_sizes_fractions = [0.1, 0.3, 0.5, 0.7, 1]
+    train_sizes_fractions = [0.1,0.3, 0.5, 0.6, 0.7, 0.8, 1]
     actual_train_sizes = [int(fraction * total_train_samples_after_split) for fraction in train_sizes_fractions]
 
     def get_optimizer_fn(model):
@@ -87,7 +87,7 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
         train_loader=train_loader,
         val_loader=dev_loader,
         device=device,
-        num_epochs=100,
+        num_epochs=50,
         train_sizes=train_sizes_fractions,
         loss_fn=loss_fn,
         metrics=metrics
