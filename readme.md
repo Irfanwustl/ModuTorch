@@ -48,7 +48,6 @@ The model's performance is evaluated on the dev set, with results visualized usi
 ## Future Plans:
 - **Error Analysis**: Implement tools for error analysis to better understand model limitations.
 - **Data Splitting**: Implement multiple dev sets for better evaluation and tuning.
-- **Additional Datasets**: Extend the framework to handle datasets like CIFAR-10, Fashion-MNIST, or custom datasets.
 - **Hyperparameter Tuning**: Integrate automated hyperparameter tuning methods (e.g., grid search, random search).
 
 ## Contributing
