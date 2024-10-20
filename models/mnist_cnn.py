@@ -31,20 +31,38 @@ class MNISTCNN(nn.Module):
     #     x = self.fc2(x)
     #     return x
 
+    # def __init__(self):
+    #     super(MNISTCNN, self).__init__()
+    #     # A single convolutional layer with 1 input channel, 8 output channels, and 3x3 kernel
+    #     self.conv1 = nn.Conv2d(1, 8, kernel_size=3)
+    #     # A single fully connected layer that maps 8*26*26 features to 10 classes
+    #     self.fc1 = nn.Linear(8 * 26 * 26, 10)
+    
+    # def forward(self, x):
+    #     # Convolutional layer with ReLU activation
+    #     x = torch.relu(self.conv1(x))
+    #     # Flatten the feature maps into a vector
+    #     x = x.view(x.size(0), -1)  # Flatten the tensor
+    #     # Fully connected layer
+    #     x = self.fc1(x)
+    #     return x
+
+
+
     def __init__(self):
         super(MNISTCNN, self).__init__()
-        # A single convolutional layer with 1 input channel, 8 output channels, and 3x3 kernel
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=3)
-        # A single fully connected layer that maps 8*26*26 features to 10 classes
-        self.fc1 = nn.Linear(8 * 26 * 26, 10)
-    
+        # A fully connected layer mapping 28*28 input pixels to 128 hidden units
+        self.fc1 = nn.Linear(28 * 28, 128)
+        # Output layer mapping the 128 hidden units to 10 classes
+        self.fc2 = nn.Linear(128, 10)
+
     def forward(self, x):
-        # Convolutional layer with ReLU activation
-        x = torch.relu(self.conv1(x))
-        # Flatten the feature maps into a vector
-        x = x.view(x.size(0), -1)  # Flatten the tensor
-        # Fully connected layer
-        x = self.fc1(x)
+        # Flatten the 28x28 image to a 1D vector
+        x = x.view(-1, 28 * 28)
+        # Fully connected layer with ReLU activation
+        x = torch.relu(self.fc1(x))
+        # Output layer (no activation here, typically softmax applied outside for classification)
+        x = self.fc2(x)
         return x
 
 

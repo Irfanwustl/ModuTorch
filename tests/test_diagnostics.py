@@ -87,7 +87,7 @@ def test_learning_curve_with_train_dev_split(initialize_model_fn, num_channels, 
         train_loader=train_loader,
         val_loader=dev_loader,
         device=device,
-        num_epochs=50,
+        num_epochs=20,
         train_sizes=train_sizes_fractions,
         loss_fn=loss_fn,
         metrics=metrics

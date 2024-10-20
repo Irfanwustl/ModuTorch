@@ -27,6 +27,9 @@ class ModelTrainer:
         self._train_losses = []
         self._val_losses = []
         self._metric_performances = []  
+        self._predictions = None  
+        self._targets = None  
+        self._probabilities = None
 
     def train(self, train_loader, val_loader=None, num_epochs=10, **kwargs):
         """
@@ -94,43 +97,82 @@ class ModelTrainer:
             plt.ioff()  # Turn off interactive mode
             plt.show()  # Show final plot after training
 
+
+
     def validate(self, val_loader):
         """
-        Validate the model on the validation set.
+        Validate the model on the validation set and capture predictions, targets, and probabilities for later use.
 
         Args:
-            val_loader (DataLoader): DataLoader for the validation or test data.
+            val_loader (DataLoader): DataLoader for the validation data.
 
         Returns:
             tuple: Validation loss averaged over all batches and a dictionary of metrics.
         """
         self.model.eval()
         val_loss = 0.0
-        running_metrics = {name: 0.0 for name in self.metrics}  # Initialize metrics
+        running_metrics = {name: 0.0 for name in self.metrics}
 
-        with torch.no_grad():  # Disable gradient computation for validation
+        all_preds = []  # To store all predictions
+        all_targets = []  # To store all actual targets
+        all_probs = []  # To store predicted probabilities
+
+        with torch.no_grad():
             for inputs, targets in val_loader:
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
                 outputs = self.model(inputs)
                 loss = self.loss_fn(outputs, targets)
                 val_loss += loss.item()
 
+                # Capture predictions and targets
+                probs = torch.softmax(outputs, dim=1)  # Get probabilities
+                _, preds = torch.max(probs, 1)  # Get the predicted classes
+
+                all_preds.extend(preds.cpu().numpy())
+                all_targets.extend(targets.cpu().numpy())
+                all_probs.extend(probs.cpu().numpy())  # Store probabilities
+
                 # Compute metrics
                 for name, metric_fn in self.metrics.items():
                     metric_value = metric_fn(outputs, targets)
-                    # Check if the metric value is a tensor or a float
                     if isinstance(metric_value, torch.Tensor):
                         running_metrics[name] += metric_value.item()
                     else:
                         running_metrics[name] += metric_value
 
-        # Average the loss and metrics over all validation batches
         avg_val_loss = val_loss / len(val_loader)
         avg_metrics = {name: metric_value / len(val_loader) for name, metric_value in running_metrics.items()}
 
+        # Store predictions, targets, and probabilities for later use
+        self._predictions = all_preds
+        self._targets = all_targets
+        self._probabilities = all_probs
+
         return avg_val_loss, avg_metrics
+    
+    def get_probabilities(self):
+        """
+        Get the predicted probabilities captured during validation.
+
+        Returns:
+            list: Predicted probabilities for each class.
+        """
+        if self._probabilities is None:
+            raise ValueError("You must run validate before getting probabilities.")
+        return self._probabilities
 
 
+    def get_predictions_and_targets(self):
+        """
+        Get the predictions and targets captured during validation.
+
+        Returns:
+            tuple: Two lists containing the predicted and actual labels.
+        """
+        if self._predictions is None or self._targets is None:
+            raise ValueError("You must run validate before getting predictions and targets.")
+        return self._predictions, self._targets
+    
     def plot_loss_vs_epochs(self):
         """
         Plot the training and validation losses after training has completed.
