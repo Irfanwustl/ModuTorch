@@ -1,6 +1,5 @@
-import pytest
 import torch
-from train.metrics import accuracy_metric
+from modu_torch.training.metrics import accuracy_metric
 
 def test_accuracy_metric():
     """

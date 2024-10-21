@@ -27,13 +27,13 @@ ModuTorch provides a foundation for building, training, and evaluating deep lear
 2. **Install dependencies**:
 
     ```bash
-    TODO
-    #pip install -r requirements.txt
+    pip install -r requirements.txt
     ```
 
-3. **Run the project**:
+3. **Install ModuTorch in editable mode**:
+
     ```bash
-    TODO
+    pip install -e .
     ```
 
 ## Usage
@@ -53,4 +53,7 @@ The model's performance is evaluated on the dev set, with results visualized usi
 ## Contributing
 Contributions are welcome! Feel free to open issues or submit pull requests.
 
+## License
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)

@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 import torch
 from torchvision import transforms
-from datasets.mnist_dataset import MNISTDataset
+from modu_torch.datasets.mnist_dataset import MNISTDataset
 import struct
 
 

@@ -1,19 +1,19 @@
 import pytest
 import torch
 import logging
-from train.diagnostics import calculate_learning_curve
-from train.train_model import ModelTrainer
-from dataloaders.data_loaders import get_data_loaders
+from modu_torch.training.diagnostics import calculate_learning_curve
+from modu_torch.training.train_model import ModelTrainer
+from modu_torch.dataloaders.data_loaders import get_data_loaders
 from torchvision import transforms
-from datasets.mnist_dataset import MNISTDataset
-from utils.project_settings import set_random_seed
-from train.metrics import accuracy_metric
-from train.losses import get_cross_entropy_loss
-from train.optimizers import get_adam_optimizer
-from train.plotter import Plotter
-from models.vgg import initialize_vgg16_no_dropout
+from modu_torch.datasets.mnist_dataset import MNISTDataset
+from modu_torch.utils.project_settings import set_random_seed
+from modu_torch.training.metrics import accuracy_metric
+from modu_torch.training.losses import get_cross_entropy_loss
+from modu_torch.training.optimizers import get_adam_optimizer
+from modu_torch.training.plotter import Plotter
+from modu_torch.models.vgg import initialize_vgg16_no_dropout
 
-from models.mnist_cnn import MNISTCNN  # Import your custom CNN model
+from modu_torch.models.mnist_cnn import MNISTCNN  # Import your custom CNN model
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

@@ -1,8 +1,8 @@
 import pytest
 import torch
 from torch.utils.data import DataLoader
-from dataloaders.data_loaders import get_data_loaders
-from datasets.mnist_dataset import MNISTDataset
+from modu_torch.dataloaders.data_loaders import get_data_loaders
+from modu_torch.datasets.mnist_dataset import MNISTDataset
 from torchvision import transforms
 
 # Test DataLoader with real MNIST data using the new get_data_loaders function

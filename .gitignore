@@ -3,9 +3,11 @@ __pycache__/
 *.py[cod]
 *.so
 
-# Conda environment
+# Virtual environments
 /env/
 /venv/
+*.env
+*.virtualenv
 
 # Jupyter Notebooks
 .ipynb_checkpoints
@@ -16,9 +18,30 @@ __pycache__/
 *.h5
 *.ckpt
 
-# Model checkpoints and datasets
+# Model checkpoints, datasets, and generated files
 /outputs/
 /data/
+/saved_models/
+/runs/  # For TensorBoard logs if you're using it
+
+# Build and Distribution artifacts
+/build/
+/dist/
+*.egg-info/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
 
 # VS Code settings
 .vscode/
+.history/  # VS Code history if you're using any extension
+
+# System Files
+.DS_Store
+Thumbs.db

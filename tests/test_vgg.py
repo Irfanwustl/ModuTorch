@@ -1,6 +1,6 @@
 
 import pytest
-from models.vgg import initialize_vgg16
+from modu_torch.models.vgg import initialize_vgg16
 from torchvision import models
 
 # Parameterize the test to handle different numbers of output classes (e.g., for MNIST or CIFAR)
