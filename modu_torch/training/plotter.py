@@ -137,7 +137,7 @@ class Plotter:
 
         if n_classes == 2:  # Binary classification case
             # Only one ROC curve needed
-            fpr, tpr, _ = roc_curve(targets, np.array(probabilities)[:, 1])  # Second column is for class 1
+            fpr, tpr, _ = roc_curve(targets, probabilities)  # No need to index with `[:, 1]` since it's already 1D
             roc_auc = auc(fpr, tpr)
 
             plt.figure(figsize=(10, 8))
