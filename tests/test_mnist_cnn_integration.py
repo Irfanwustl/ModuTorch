@@ -28,10 +28,16 @@ def test_mnistcnn():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Use real file paths to the MNIST dataset
-    train_images_filepath = 'data/MNIST/train-images-idx3-ubyte'
-    train_labels_filepath = 'data/MNIST/train-labels-idx1-ubyte'
-    test_images_filepath = 'data/MNIST/t10k-images-idx3-ubyte'
-    test_labels_filepath = 'data/MNIST/t10k-labels-idx1-ubyte'
+    # train_images_filepath = 'data/MNIST/train-images-idx3-ubyte'
+    # train_labels_filepath = 'data/MNIST/train-labels-idx1-ubyte'
+    # test_images_filepath = 'data/MNIST/t10k-images-idx3-ubyte'
+    # test_labels_filepath = 'data/MNIST/t10k-labels-idx1-ubyte'
+
+    # for kaggle
+    train_images_filepath = '/kaggle/input/mnist-dataset/train-images-idx3-ubyte/train-images-idx3-ubyte'
+    train_labels_filepath = '/kaggle/input/mnist-dataset/train-labels-idx1-ubyte/train-labels-idx1-ubyte'
+    test_images_filepath = '/kaggle/input/mnist-dataset/t10k-images-idx3-ubyte/t10k-images-idx3-ubyte'
+    test_labels_filepath = '/kaggle/input/mnist-dataset/t10k-labels-idx1-ubyte/t10k-labels-idx1-ubyte'
 
     # Define a basic transform (resize for VGG16 input and convert grayscale to RGB)
     transform = transforms.Compose([
